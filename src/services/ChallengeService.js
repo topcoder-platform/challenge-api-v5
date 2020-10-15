@@ -856,6 +856,9 @@ async function createChallenge (currentUser, challenge, userToken) {
 
   // post bus event
   await helper.postBusEvent(constants.Topics.ChallengeCreated, ret)
+  // post aggregate event
+  ret.originalTopic = constants.Topics.ChallengeCreated
+  await helper.postBusEvent(constants.Topics.ChallengeAggregate, ret)
 
   // Create in ES
   await esClient.create({
@@ -1518,6 +1521,10 @@ async function update (currentUser, challengeId, data, userToken, isFull) {
     busEventPayload.billingAccountId = billingAccountId
   }
   await helper.postBusEvent(constants.Topics.ChallengeUpdated, busEventPayload)
+
+  // post aggregate event
+  busEventPayload.originalTopic = constants.Topics.ChallengeUpdated
+  await helper.postBusEvent(constants.Topics.ChallengeAggregate, busEventPayload)
 
   if (challenge.phases && challenge.phases.length > 0) {
     challenge.currentPhase = challenge.phases.slice().reverse().find(phase => phase.isOpen)
